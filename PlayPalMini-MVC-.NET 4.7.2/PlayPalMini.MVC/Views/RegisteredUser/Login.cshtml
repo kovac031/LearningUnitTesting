@@ -1,0 +1,74 @@
+﻿@model PlayPalMini.MVC.Models.RegisteredUserView
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<h2>Login</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Username, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Username, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Username, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Pass, "Password", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Pass, new { htmlAttributes = new { @class = "form-control", type = "password", id = "txtPass" } })
+                @Html.ValidationMessageFor(model => model.Pass, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <!-- Add the checkbox with the ID "ckShowPass" -->
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <label>
+                    <input type="checkbox" id="ckShowPass" />
+                    Show password
+                </label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Log in" 
+                       style="background-color: #f2f2f2; color: #333; padding: 6px 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer;" 
+                       onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'" />
+            </div>
+        </div>
+    </div>
+
+    <p>
+        @Html.ActionLink("Not registered? Sign Up", "SignUpAsync")
+    </p>
+}
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script>
+        $(document).ready(function () {
+            $('#ckShowPass').click(function () {
+                const ckbox = $(this);
+                const txtBox = $('#txtPass');
+
+                if (ckbox.is(':checked')) {
+                    txtBox.prop("type", "text");
+                } else {
+                    txtBox.prop("type", "password");
+                }
+            });
+        });
+    </script>
+}

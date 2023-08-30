@@ -1,0 +1,82 @@
+﻿@model PlayPalMini.MVC.Models.ReviewView
+
+@{
+    ViewBag.Title = "GetOneReviewAsync";
+}
+
+<div>
+    <h4>Review details</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Title)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Title)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Comment)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Comment)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Rating)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Rating)
+        </dd>
+        @if (User.IsInRole("Administrator"))
+        {
+            <dt>
+                @Html.DisplayNameFor(model => model.BoardGameId)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.BoardGameId)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.CreatedBy)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.CreatedBy)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.DateCreated)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.DateCreated)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.UpdatedBy)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.UpdatedBy)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.DateUpdated)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.DateUpdated)
+            </dd>
+        }
+    </dl>
+
+    <a href="@Url.Action("EditReviewAsync", "Review", new { id = Model.Id })"
+       style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+       onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'">Edit review</a>
+
+</div>

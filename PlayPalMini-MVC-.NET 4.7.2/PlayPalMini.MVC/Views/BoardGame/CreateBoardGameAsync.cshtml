@@ -1,0 +1,60 @@
+﻿@model PlayPalMini.MVC.Models.BoardGameView
+
+@{
+    ViewBag.Title = "CreateBoardGameAsync";
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="form-horizontal">
+    @if (User.IsInRole("Administrator"))
+    {
+        <h4>Add a new board game!</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.Title, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Title, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Title, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.Description, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.Description, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10" style="margin-top: 10px;">
+                <input type="submit" value="Add to database" class="btn btn-default"
+                       style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+                       onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'" />
+            </div>
+        </div>
+    }
+    else
+    {
+        <p>You are not an administrator.</p>
+    }
+</div>
+    if (TempData["ConfirmationMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["ConfirmationMessage"]</div>
+    }
+}
+
+<div style="margin-top: 10px;">
+    <a href="@Url.Action("GetAllBoardGamesAsync", "BoardGame")"
+       style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+       onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'">Back to list</a>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

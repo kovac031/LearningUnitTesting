@@ -1,0 +1,147 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<main>
+    <!-- About Section -->
+    <section class="row" aria-labelledby="aboutTitle">
+        <h1 id="aboutTitle">About this MVC app</h1>
+        <p class="lead" style="text-align: justify;">
+            PlayPalMini is my learning by doing project and a miniature version of PlayPal, which was a group project and the final exam of an intensive 255 hour-long back-end beginner course.<br>
+            The group idea was to make the MVC app be about renting board games, leaving reviews etc. 
+            Since PlayPal was a group effort, there were tasks I did not get to do myself. I wanted to make sure I have learned everything and am familiar with the code in its entirety.<br><br>
+            Being a mini version of PlayPal, PlayPalMini only contains 3 tables in the database, and logic has been simplified wherever possible (such as user roles being just a column in the user tables and being a string, instead of being guid foreign key linking to its own table dedicated for user roles).
+            But it has all of the features the big project had, just scaled down. Learning points are listed in the Readme and description on GitHub.<br><br>
+            The following section contains all created methods/functions (excluding deletion) for ease of access. When normally browsing the website, access to certain functions is limited to authorized users.<br><br>
+            The administrator credentials are:<br>
+            Username: SYSADMIN<br>
+            Password: 1234
+        </p>
+    </section>
+
+    <!-- Links to MVC Views -->
+    <div class="row mt-5">
+        <!-- Section for User controller -->
+        <section class="col-md-4">
+            <h2>Users</h2>
+            <ul>
+                <li>
+                    <a href="@Url.Action("SignUpAsync", "RegisteredUser")">
+                        Sign Up (Create new user for log in)
+                    </a>
+                    <br />
+                    Non-registered users should first register to gain full access to the website.<br>
+                    Checks whether the username is taken.
+                </li>
+                <li>
+                    <a href="@Url.Action("Login", "RegisteredUser")">
+                        Log in / Sign in
+                    </a>
+                    <br />
+                    Always accessible via the header.
+                </li>
+                <li>
+                    <a href="@Url.Action("Logout", "RegisteredUser")">
+                        Log out / Sign out
+                    </a>
+                    <br />
+                    Only accessible when the user is authenticated, logged in.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetAllUsersAsync", "RegisteredUser")">
+                        List all registered users
+                    </a>
+                    <br />
+                    Visible to SYSADMIN only.
+                </li>
+                <li>
+                    <a href="@Url.Action("EditUserAsync", "RegisteredUser", new { id = "0ae0f5ff-d5e2-4f65-947e-49c0c046d44d" })">
+                        Edit user info
+                    </a>
+                    <br />
+                    Users may change their username and password.<br>
+                    Checks whether the new desired username is taken. Administrator can edit anyone, other users can normally edit their own information only, but here it links to a dummy user.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Section for Board Game controller -->
+        <section class="col-md-4">
+            <h2>Board Games</h2>
+            <ul>
+                <li>
+                    <a href="@Url.Action("CreateBoardGameAsync", "BoardGame")">
+                        Add a new board game to the database
+                    </a>
+                    <br />
+                    Administrators can add new games. Normally accessible from the board games list page.
+                </li>
+                <li>
+                    <a href="@Url.Action("EditBoardGameAsync", "BoardGame", new { id = "897f8b53-0136-4162-8bae-8509a0c160fc" })">
+                        Edit board game info
+                    </a>
+                    <br />
+                    Administrators can edit the games in the database. Normally accessible from the board games list page, here it links to a dummy board game.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetAllBoardGamesAsync", "BoardGame")">
+                        List all board games
+                    </a>
+                    <br />
+                    Has paging, can sort and filter/search. Links to a detailed view of a single game.
+                    <br />
+                    Administrator can Create, Edit and Delete.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetSpecificBoardGameAsync", "BoardGame", new { id = "897f8b53-0136-4162-8bae-8509a0c160fc" })">
+                        Retrieve one board game by Id
+                    </a>
+                    <br />
+                    Shows game details, implements partial views with forms to leave reviews and list reviews for that game (has paging and sorting). Normally accessible from the board games list page, here it links to a dummy board game.
+                </li>
+            </ul>
+        </section>
+
+        <!-- Section for Controller 3 -->
+        <section class="col-md-4">
+            <h2>Reviews</h2>
+            <ul>
+                <li>
+                    <a href="@Url.Action("GetSpecificBoardGameAsync", "BoardGame", new { id = "897f8b53-0136-4162-8bae-8509a0c160fc" })">
+                        Leave a new review
+                    </a>
+                    <br />
+                    Implemented as a partial view, therefore links to the dummy board game page. It used to have its own page but there was no use for it.
+                </li>
+                <li>
+                    <a href="@Url.Action("EditReviewAsync", "Review", new { id = "bbdc7664-6459-467d-8408-13937cd11627" })">
+                        Edit an existing review
+                    </a>
+                    <br />
+                    Authorized users may edit. Normally accessible from the list of reviews, here it links to a dummy review.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetAllReviewsAsync", "Review")">
+                        List all reviews
+                    </a>
+                    <br />
+                    Reviews overview accessible to Administrator only, registered users can see reviews of specific games on those pages. List is sortable and has paging, Administrator can edit and delete.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetOneReviewAsync", "Review", new { id = "bbdc7664-6459-467d-8408-13937cd11627" })">
+                        Retrieve one review based on Id
+                    </a>
+                    <br />
+                    Only really used by the Administrator, for delete method and viewing non-truncated review text. Here links to a dummy review.
+                </li>
+                <li>
+                    <a href="@Url.Action("GetMyReviewsAsync", "Review")">
+                        List all reviews written by the currently authenticated user
+                    </a>
+                    <br />
+                    Retrieves a list of reviews containing only reviews authored by whoever is currently logged in.
+                </li>
+            </ul>
+        </section>
+    </div>
+</main>

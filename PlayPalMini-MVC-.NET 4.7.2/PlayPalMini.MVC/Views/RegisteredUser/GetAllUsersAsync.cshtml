@@ -1,0 +1,67 @@
+﻿@model IEnumerable<PlayPalMini.MVC.Models.RegisteredUserView>
+
+@{
+    ViewBag.Title = "GetAllUsersAsync";
+}
+
+<h2>All users</h2>
+@if (User.IsInRole("Administrator"))
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Username)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UserRole)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CreatedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.UpdatedBy)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateCreated)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DateUpdated)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Username)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UserRole)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.CreatedBy)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UpdatedBy)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateCreated)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DateUpdated)
+                </td>
+                <td>
+                    <a href="@Url.Action("EditUserAsync", "RegisteredUser", new { id = item.Id })"
+                       style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+                       onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'">Edit</a>
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+else
+{
+    <p>You are not an administrator.</p>
+}

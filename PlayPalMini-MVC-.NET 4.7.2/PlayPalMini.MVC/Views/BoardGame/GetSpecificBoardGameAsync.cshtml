@@ -1,0 +1,117 @@
+﻿@model PlayPalMini.MVC.Models.BoardGameView
+
+@{
+    ViewBag.Title = "GetSpecificBoardGameAsync";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <h4>Game Details</h4>
+
+        <a href="@Url.Action("GetAllBoardGamesAsync", "BoardGame")"
+           style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+           onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'">Back to list</a>
+
+        <hr />
+        <dl class="dl-horizontal">
+            <dt>
+                @Html.DisplayNameFor(model => model.Title)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Title)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.Description)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.Description)
+            </dd>
+
+            <dt>
+                @Html.DisplayNameFor(model => model.AvgRating)
+            </dt>
+
+            <dd>
+                @Html.DisplayFor(model => model.AvgRating)
+            </dd>
+
+            @if (User.IsInRole("Administrator"))
+            {
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.CreatedBy)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.CreatedBy)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.DateCreated)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.DateCreated)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.UpdatedBy)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.UpdatedBy)
+                </dd>
+
+                <dt>
+                    @Html.DisplayNameFor(model => model.DateUpdated)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.DateUpdated)
+                </dd>
+            }
+        </dl>
+    </div>
+
+    <div class="col-md-4">
+        <div id="partialCreateReview"></div>
+    </div>
+</div>
+@if (User.IsInRole("Administrator"))
+{
+    <p>
+        <a href="@Url.Action("EditBoardGameAsync", "BoardGame", new { id = Model.Id })"
+           style="background-color: #f2f2f2; color: #333; padding: 4px 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 8px; cursor: pointer; text-decoration: none;"
+           onmouseover="this.style.backgroundColor='#dcdcdc'" onmouseout="this.style.backgroundColor='#f2f2f2'">Edit</a>
+    </p>
+}
+
+@{
+    var id = Model.Id;
+}
+<div id="partialReviews"></div>
+
+@section Scripts
+{
+    <script>
+        var id = '@id';
+
+        // drukcije hendlanje sortiranja jer je partial view
+        // dodao paging elemente, preimenovao funkciju u updatePartial
+        function updatePartial(sorting, page)
+        {
+            $.get('@Url.Action("GetReviewsForSpecificGameAsync", "Review", new { id = id })', { sorting: sorting, page: page }, function (data)
+            {
+                $('#partialReviews').html(data);
+            });
+        }
+        //
+
+        $('#partialReviews').load('@Url.Action("GetReviewsForSpecificGameAsync", "Review", new { id = id })');
+        $('#partialCreateReview').load('@Url.Action("CreateReviewAsync", "Review", new { id = id })');
+
+    </script>
+}
