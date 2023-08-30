@@ -1,0 +1,28 @@
+- za .NET 7 add new project -> xUnit Test Project -> Naziv.Tests
+
+pokreces u Visual Studio sa:
+
+> Test
+	> Run All Tests
+
+- nove klase
+	- NazivControllerTests.cs
+	- NativServiceTests.cs
+	- NazivRepositoryTests.cs
+
+naming test metode ide:
+	- ImeKontrolera_ImeMetodeUkontroleru_ReturnWhat()
+
+- za prvi unittest koristim FakeItEasy jer pratim tutorial, prvo da osposobim sve a onda cu isprobavati druge stvari
+	- install nuget package u WebAPI.Tests > FakeItEasy
+
+- Dependency injection izgleda ovako za npr kontroler test:
+
+	private readonly StudentController _controller;
+        private readonly IService _service;
+        public StudentControllerTests()
+        {
+            _service = A.Fake<IService>(); //FakeItEasy
+            _controller = new StudentController(_service); // SUT, system under test
+        }
+
