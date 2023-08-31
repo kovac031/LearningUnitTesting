@@ -110,7 +110,7 @@ namespace WebAPI.Tests
         public async Task GetOneByIdAsync_ReturnObject()
         {
             // Arrange
-            Guid id = Guid.NewGuid(); // moze i konkretan guid tu
+            Guid id = Guid.NewGuid(); // moze i konkretan guid tu, imam poseban za test za to malo nize
             A.CallTo(() => _service.GetOneByIdAsync(id)).Returns(new StudentDTO());
 
             // Act
