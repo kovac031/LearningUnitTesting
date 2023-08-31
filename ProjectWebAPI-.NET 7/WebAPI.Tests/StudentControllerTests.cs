@@ -51,7 +51,7 @@ namespace WebAPI.Tests
         }
         //----------------- GET ALL / LIST -------------- // moj GetAllAsync ima dva returna, listu ako uspije i exception ako ne, testam to dvoje i testiram konkretan popis
         [Fact]
-        public async Task StudentController_GetAllAsync_ReturnList() // lista
+        public async Task GetAllAsync_ReturnList() // lista
         {
             // Arrange
             A.CallTo(() => _service.GetAllAsync()).Returns(new List<StudentDTO>());
@@ -64,7 +64,7 @@ namespace WebAPI.Tests
             Assert.IsType<List<StudentDTO>>(okResult.Value);
         }
         [Fact]
-        public async Task StudentController_GetAllAsync_ThrowException() // exception
+        public async Task GetAllAsync_ThrowException() // exception
         {
             // Arrange
             var exception = "Database connection error";
@@ -79,7 +79,7 @@ namespace WebAPI.Tests
             Assert.Equal($"Error for GetAllAsync: {exception}", objectResult.Value);
         }
         [Fact]
-        public async Task StudentController_GetAllAsync_ReturnFakeList() // fake lista
+        public async Task GetAllAsync_ReturnFakeList() // fake lista
         {
             // Arrange
             List<StudentDTO> fakeStudents = GetFakeStudents();
@@ -107,7 +107,7 @@ namespace WebAPI.Tests
         }
         // ---------------- GET ONE BY ID ---------------
         [Fact]
-        public async Task StudentController_GetOneByIdAsync_ReturnObject()
+        public async Task GetOneByIdAsync_ReturnObject()
         {
             // Arrange
             Guid id = Guid.NewGuid(); // moze i konkretan guid tu
@@ -121,7 +121,7 @@ namespace WebAPI.Tests
             Assert.IsType<StudentDTO>(okResult.Value);
         }
         [Fact]
-        public async Task StudentController_GetOneByIdAsync_ThrowException() 
+        public async Task GetOneByIdAsync_ThrowException() 
         {
             // Arrange
             Guid id = Guid.NewGuid();
@@ -137,7 +137,7 @@ namespace WebAPI.Tests
             Assert.Equal($"Error for GetOneByIdAsync: {exception}", objectResult.Value);
         }
         [Fact]
-        public async Task StudentController_GetOneByIdAsync_ReturnSpecificFakeStudent()
+        public async Task GetOneByIdAsync_ReturnSpecificFakeStudent()
         {
             // Arrange
             List<StudentDTO> fakeStudents = GetFakeStudents();
@@ -162,7 +162,7 @@ namespace WebAPI.Tests
         }
         // ------------------- CREATE ---------------
         [Fact]
-        public async Task StudentController_CreateAsync_CreationSuccess()
+        public async Task CreateAsync_CreationSuccess()
         {
             // Arrange
             StudentDTO newStudent = new StudentDTO
@@ -195,7 +195,7 @@ namespace WebAPI.Tests
             Assert.Equal(newStudent.Id, response.data.Id);
         }
         [Fact]
-        public async Task StudentController_CreateAsync_CreationFail()
+        public async Task CreateAsync_CreationFail()
         {
             // Arrange
             StudentDTO newStudent = new StudentDTO
@@ -218,7 +218,7 @@ namespace WebAPI.Tests
             Assert.Equal("Failed to create", badRequestResult.Value);
         }
         [Fact]
-        public async Task StudentController_CreateAsync_ExceptionThrown()
+        public async Task CreateAsync_ExceptionThrown()
         {
             // Arrange
             StudentDTO newStudent = new StudentDTO
@@ -243,17 +243,101 @@ namespace WebAPI.Tests
             Assert.Equal($"Error for CreateAsync: {exceptionMessage}", objectResult.Value);
         }
         // -------------------- EDIT ---------------
-        public async Task StudentController_EditAsync_ReturnBool()
+        [Fact]
+        public async Task EditAsync_EditSuccess()
         {
+            // Arrange
+            StudentDTO studentToEdit = new StudentDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Marcus",
+                LastName = "Aurelius",
+                DateOfBirth = new DateTime(2001, 1, 1),
+                EmailAddress = "markimark@roma.com"
+            };
 
+            A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Returns(true);
+
+            // Act
+            var result = await _controller.EditAsync(studentToEdit, studentToEdit.Id);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Edited!", okResult.Value);
+        }
+        [Fact]
+        public async Task EditAsync_EditEmailSuccess()
+        {
+            // Arrange
+            Guid studentId = Guid.NewGuid();
+            StudentDTO studentToEdit = new StudentDTO
+            {
+                Id = studentId,
+                EmailAddress = "new.email@domain.com"
+            };
+
+            A.CallTo(() => _service.EditAsync(studentToEdit, studentId)).Returns(true);
+
+            // Act
+            var result = await _controller.EditAsync(studentToEdit, studentId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Edited!", okResult.Value);
+        }
+        [Fact]
+        public async Task EditAsync_EditFail()
+        {
+            // Arrange
+            StudentDTO studentToEdit = new StudentDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Marcus",
+                LastName = "Aurelius",
+                DateOfBirth = new DateTime(2001, 1, 1),
+                EmailAddress = "markimark@roma.com"
+            };
+
+            A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Returns(false);
+
+            // Act
+            var result = await _controller.EditAsync(studentToEdit, studentToEdit.Id);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Failed to edit", badRequestResult.Value);
+        }
+        [Fact]
+        public async Task EditAsync_ExceptionThrown()
+        {
+            // Arrange
+            StudentDTO studentToEdit = new StudentDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Marcus",
+                LastName = "Aurelius",
+                DateOfBirth = new DateTime(2001, 1, 1),
+                EmailAddress = "markimark@roma.com"
+            };
+
+            var exceptionMessage = "Database connection error";
+            A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Throws(new Exception(exceptionMessage));
+
+            // Act
+            var result = await _controller.EditAsync(studentToEdit, studentToEdit.Id);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+            Assert.Equal($"Error for EditAsync: {exceptionMessage}", objectResult.Value);
         }
         // ------------------- DELETE ---------------
-        public async Task StudentController_DeleteAsync_ReturnBool()
+        public async Task DeleteAsync_ReturnBool()
         {
 
         }
         // ------------ GET LIST WITH PARAMETERS ---------------
-        public async Task StudentController_ParamsAsync_ReturnList()
+        public async Task ParamsAsync_ReturnList()
         {
 
         }
