@@ -67,7 +67,7 @@ namespace WebAPI.Tests
         public async Task GetAllAsync_ThrowException() // exception
         {
             // Arrange
-            var exception = "Database connection error";
+            var exception = "Exception returned from service layer";
             A.CallTo(() => _service.GetAllAsync()).Throws(new Exception(exception));
 
             // Act
@@ -125,7 +125,7 @@ namespace WebAPI.Tests
         {
             // Arrange
             Guid id = Guid.NewGuid();
-            var exception = "Database connection error";
+            var exception = "Exception returned from service layer";
             A.CallTo(() => _service.GetOneByIdAsync(id)).Throws(new Exception(exception));
 
             // Act
@@ -175,7 +175,7 @@ namespace WebAPI.Tests
                 RegisteredOn = DateTime.Now
             };
 
-            A.CallTo(() => _service.CreateAsync(newStudent)).Returns(true);
+            A.CallTo(() => _service.CreateAsync(newStudent)).Returns(true); // CreateAsync(StudentDTO student), mocka true
 
             // Act
             var result = await _controller.CreateAsync(newStudent);
@@ -231,7 +231,7 @@ namespace WebAPI.Tests
                 RegisteredOn = DateTime.Now
             };
 
-            var exceptionMessage = "Database connection error";
+            var exceptionMessage = "Exception returned from service layer";
             A.CallTo(() => _service.CreateAsync(newStudent)).Throws(new Exception(exceptionMessage));
 
             // Act
@@ -256,7 +256,7 @@ namespace WebAPI.Tests
                 EmailAddress = "markimark@roma.com"
             };
 
-            A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Returns(true);
+            A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Returns(true); // u kontroleru je EditAsync(StudentDTO student, Guid id), dakle te parametre trazi jel, a mocka true
 
             // Act
             var result = await _controller.EditAsync(studentToEdit, studentToEdit.Id);
@@ -320,7 +320,7 @@ namespace WebAPI.Tests
                 EmailAddress = "markimark@roma.com"
             };
 
-            var exceptionMessage = "Database connection error";
+            var exceptionMessage = "Exception returned from service layer";
             A.CallTo(() => _service.EditAsync(studentToEdit, studentToEdit.Id)).Throws(new Exception(exceptionMessage));
 
             // Act
@@ -332,14 +332,344 @@ namespace WebAPI.Tests
             Assert.Equal($"Error for EditAsync: {exceptionMessage}", objectResult.Value);
         }
         // ------------------- DELETE ---------------
-        public async Task DeleteAsync_ReturnBool()
+        [Fact]
+        public async Task DeleteAsync_DeleteSuccess()
         {
+            // Arrange
+            Guid studentId = Guid.NewGuid(); // ne treba nam cijeli student jer se ne pojavljuje u metodi u kontroleru
+            A.CallTo(() => _service.DeleteAsync(studentId)).Returns(true); 
 
+            // Act
+            var result = await _controller.DeleteAsync(studentId);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal("Deleted!", okResult.Value);
+        }
+        [Fact]
+        public async Task DeleteAsync_DeleteFail()
+        {
+            // Arrange
+            Guid studentId = Guid.NewGuid();
+
+            A.CallTo(() => _service.DeleteAsync(studentId)).Returns(false);
+
+            // Act
+            var result = await _controller.DeleteAsync(studentId);
+
+            // Assert
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Failed to delete", badRequestResult.Value);
+        }
+        [Fact]
+        public async Task DeleteAsync_ExceptionThrown()
+        {
+            // Arrange
+            Guid studentId = Guid.NewGuid();
+            var exceptionMessage = "Exception returned from service layer";
+            A.CallTo(() => _service.DeleteAsync(studentId)).Throws(new Exception(exceptionMessage));
+
+            // Act
+            var result = await _controller.DeleteAsync(studentId);
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+            Assert.Equal($"Error for DeleteAsync: {exceptionMessage}", objectResult.Value);
         }
         // ------------ GET LIST WITH PARAMETERS ---------------
-        public async Task ParamsAsync_ReturnList()
+        [Fact]
+        public async Task ParamsAsync_ReturnList_NoParams()
         {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ParamsAsync(null,           // sortBy
+                                                null, null,     // firstName, lastName
+                                                null, null,     // dobBefore, dobAfter
+                                                null, null,     // regBefore, regAfter
+                                                null, null))    // pageNumber, studentsPerPage
+                .Returns(fakeStudents);
 
+            // Act
+            var result = await _controller.ParamsAsync();
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        // ----------------------------------------------------- FILTERING
+        [Fact]
+        public async Task ParamsAsync_FilterByFirstName()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.FirstName.Contains("re", StringComparison.OrdinalIgnoreCase)).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, "re", null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(firstName: "re"); // tu vidi taj firstName iz kontrolera, ali iznad isto taj format ne prolazi
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        //
+        [Fact]
+        public async Task ParamsAsync_FilterByLastName()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.LastName.Contains("a", StringComparison.OrdinalIgnoreCase)).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, null, "a", null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(lastName: "a"); 
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        //
+        [Fact]
+        public async Task ParamsAsync_FilterByDateOfBirth_BornBefore()
+        {
+            DateTime filterDate = new DateTime(1995, 1, 1); // parametar za usporedbu
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.DateOfBirth <= filterDate).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, null, null, filterDate.ToString("yyyy-MM-dd"), null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(dobBefore: filterDate.ToString("yyyy-MM-dd"));
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        [Fact]
+        public async Task ParamsAsync_FilterByDateOfBirth_BornAfter()
+        {
+            DateTime filterDate = new DateTime(1995, 1, 1); // parametar za usporedbu
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.DateOfBirth >= filterDate).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, null, null, null, filterDate.ToString("yyyy-MM-dd"), null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(dobAfter: filterDate.ToString("yyyy-MM-dd"));
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        //
+        [Fact]
+        public async Task ParamsAsync_FilterByRegisteredOn_RegisteredBefore()
+        {
+            DateTime filterDate = new DateTime(2022, 1, 1); // parametar za usporedbu
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.DateOfBirth <= filterDate).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, null, null, null, null, filterDate.ToString("yyyy-MM-dd"), null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(regBefore: filterDate.ToString("yyyy-MM-dd"));
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        [Fact]
+        public async Task ParamsAsync_FilterByRegisteredOn_RegisteredAfter()
+        {
+            DateTime filterDate = new DateTime(2022, 1, 1); // parametar za usporedbu
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Where(s => s.DateOfBirth >= filterDate).ToList();
+            A.CallTo(() => _service.ParamsAsync(null, null, null, null, null, null, filterDate.ToString("yyyy-MM-dd"), null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(regAfter: filterDate.ToString("yyyy-MM-dd"));
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        // ----------------------------------------------------- SORTING
+        [Fact]
+        public async Task ParamsAsync_SortByFirstName_Desc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.FirstName).ToList();
+            A.CallTo(() => _service.ParamsAsync("name_desc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "name_desc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName); // provjerava jesu li se poklopili pri sortiranju, ja znam da imam tri pa sam ih stavio tri
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByFirstName_Asc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.FirstName).ToList();
+            A.CallTo(() => _service.ParamsAsync("name_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "name_asc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName); 
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        //
+        [Fact]
+        public async Task ParamsAsync_SortByLastName_Desc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.LastName).ToList();
+            A.CallTo(() => _service.ParamsAsync("surname_desc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "surname_desc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByLastName_Asc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.LastName).ToList();
+            A.CallTo(() => _service.ParamsAsync("surname_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "surname_asc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        //
+        [Fact]
+        public async Task ParamsAsync_SortByDateOfBirth_Desc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.DateOfBirth).ToList();
+            A.CallTo(() => _service.ParamsAsync("dob_desc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "dob_desc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByDateOfBirth_Asc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.DateOfBirth).ToList();
+            A.CallTo(() => _service.ParamsAsync("dob_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "dob_asc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByRegisteredOn_Desc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.RegisteredOn).ToList();
+            A.CallTo(() => _service.ParamsAsync("signup_desc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "signup_desc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByRegisteredOn_Asc()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.RegisteredOn).ToList();
+            A.CallTo(() => _service.ParamsAsync("signup_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(sortBy: "signup_asc");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        // ------------------------------------------------------------ PAGING
+        [Fact]
+        public async Task ParamsAsync_Paging()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents().Skip(1).Take(1).ToList(); // Imam 3 studenta na listi, tako da je ovo 1 po stranici, druga stranica (prekoci 1)
+            A.CallTo(() => _service.ParamsAsync(null, null, null, null, null, null, null, "2", "1")).Returns(fakeStudents);
+
+            // Act
+            var result = await _controller.ParamsAsync(pageNumber: "2", studentsPerPage: "1");
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            List<StudentDTO> list = Assert.IsType<List<StudentDTO>>(okResult.Value);
+            Assert.Equal(fakeStudents.Count, list.Count);
+        }
+        // ------------------------------------------------------ EXCEPTION
+        [Fact]
+        public async Task ParamsAsync_ThrowException()
+        {
+            // Arrange
+            var exception = "Exception returned from service layer";
+            A.CallTo(() => _service.ParamsAsync(null, null, null, null, null, null, null, null, null)).Throws(new Exception(exception));
+
+            // Act
+            var result = await _controller.ParamsAsync();
+
+            // Assert
+            var objectResult = Assert.IsType<ObjectResult>(result);
+            Assert.Equal((int)HttpStatusCode.InternalServerError, objectResult.StatusCode);
+            Assert.Equal($"Error for ParamsAsync: {exception}", objectResult.Value);
         }
     }
 }

@@ -26,3 +26,6 @@ naming test metode ide:
             _controller = new StudentController(_service); // SUT, system under test
         }
 
+- u biti nije problem samo testiranje po sebi, nego znati sto ima smisla testirati a sto ne
+	- u kontroleru, uglavnom metoda returna tri moguca rezultata - success, fail i exception
+		- tako da testiram barem to
