@@ -25,18 +25,6 @@ namespace Repository
         {
             IQueryable<Student> student = Context.Students;
 
-            //List<StudentDTO> list = await student.Select(x => new StudentDTO()
-            //{
-            //    Id = x.Id,
-            //    FirstName = x.FirstName,
-            //    LastName = x.LastName,
-            //    DateOfBirth = x.DateOfBirth,
-            //    EmailAddress = x.EmailAddress,
-            //    RegisteredOn = x.RegisteredOn
-            //}).ToListAsync<StudentDTO>();
-
-            //return list;
-
             return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
         }
         //--------------- GET ONE BY ID --------------

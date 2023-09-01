@@ -1,4 +1,8 @@
-- za .NET 7 add new project -> xUnit Test Project -> Naziv.Tests
+
+************************************
+------- ProjectWebAPI-.NET 7 -------
+
+- solution -> add new project -> xUnit Test Project -> Naziv.Tests
 
 pokreces u Visual Studio sa:
 
@@ -7,7 +11,7 @@ pokreces u Visual Studio sa:
 
 - nove klase
 	- NazivControllerTests.cs
-	- NativServiceTests.cs
+	- NazivServiceTests.cs
 	- NazivRepositoryTests.cs
 
 naming test metode ide:
@@ -29,3 +33,27 @@ naming test metode ide:
 - u biti nije problem samo testiranje po sebi, nego znati sto ima smisla testirati a sto ne
 	- u kontroleru, uglavnom metoda returna tri moguca rezultata - success, fail i exception
 		- tako da testiram barem to
+	- u servisu sam stvarno minimalno, samo provjera za return true, nista greske i exceptioni, puno je za sad
+	- za repository ja malo drugacije jer sad baratam sa DbContext
+		- fejkam i DbSet
+		- pravim novu klasu AsyncHelper jer fejkanje DbSeta ne zna hendlat async
+		- zbog AutoMapper konflikta i potrebnih zaobilazenja da bi test radio, u repositoriju u .NET7 WebAPI gdje sam koristio AutoMapper u biti ne testiram je li returna listu, nego da li dobro mapira, tako da dalje nema smisla, treba preci na drugi projekt gdje AutoMapper nece pravit probleme s asyncom
+
+************************************
+------- ProjectMVC-.NET 7 -------
+
+- razlika u kontroleru
+
+
+
+*********************************************
+------ PlayPalMini-WebAPI-.NET 4.7.2 -------- 
+
+- nema AutoMapper, ali i nije .NET 7 :/
+
+
+
+
+
+
+

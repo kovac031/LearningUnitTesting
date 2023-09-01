@@ -53,11 +53,11 @@ namespace WebAPI.Tests
         public async Task GetAllAsync_ReturnList()
         {
             // Arrange
-            var fakeStudents = GetFakeStudents();
+            List<StudentDTO> fakeStudents = GetFakeStudents();
             A.CallTo(() => _repository.GetAllAsync()).Returns(fakeStudents);
 
             // Act
-            var result = await _service.GetAllAsync();
+            List<StudentDTO> result = await _service.GetAllAsync();
 
             // Assert
             Assert.Equal(fakeStudents, result);
