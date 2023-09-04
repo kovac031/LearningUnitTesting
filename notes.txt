@@ -46,7 +46,8 @@ naming test metode ide:
 - new xUnit project, .NET 7
 - fakeiteasy
 - get metode nemaju bas sta za testirati, ali dalje ove da
-	- create 
+	- create i edit imaju vise returnova pa se vise toga da testirati
+	- delete ovdje konkretno u kontroleru nije imao fail ili exception pa je jednostavniji neg moze bit
 
 
 

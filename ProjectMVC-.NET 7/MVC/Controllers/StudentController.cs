@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Model;
+using Newtonsoft.Json;
 using Service.Common;
 using X.PagedList;
 
@@ -166,6 +167,7 @@ namespace MVC.Controllers
             // PAGING part 2
             StaticPagedList<StudentView> pagedList = new StaticPagedList<StudentView>(listView, pageNumber, pageSize, count);
             ViewBag.CurrentPage = page;
+
 
             return View(pagedList);
         }
