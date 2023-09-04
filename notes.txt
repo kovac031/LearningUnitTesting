@@ -43,6 +43,12 @@ naming test metode ide:
 ------- ProjectMVC-.NET 7 -------
 
 - razlika u kontroleru
+- new xUnit project, .NET 7
+- fakeiteasy
+- get metode nemaju bas sta za testirati, ali dalje ove da
+	- create 
+
+
 
 
 
