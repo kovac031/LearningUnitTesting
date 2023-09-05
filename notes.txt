@@ -49,8 +49,12 @@ naming test metode ide:
 	- create i edit imaju vise returnova pa se vise toga da testirati
 	- delete ovdje konkretno u kontroleru nije imao fail ili exception pa je jednostavniji neg moze bit
 
+- otkrio da u listwithparams moj search nije bio case insensitive, pa prilagodio
+- _output je fora
+- automapper pravi probleme testu, MVC radi oke i sve dobro mapira, ali iz nekog razloga za test ne mapira, tako da sam morao rucno mapirati radi testa
+	- u biti, guglanje kaze da je problem oko konflikta EF Core in-memory db i Automapperov projectto
 
-
+- ListWithParams se bas lijepo da testirati
 
 
 *********************************************

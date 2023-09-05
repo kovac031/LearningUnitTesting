@@ -107,8 +107,8 @@ namespace MVC.Controllers
             if (!string.IsNullOrEmpty(searchBy)) // trazi po imenu i prezimenu
             {
                 filteredList = listDTO.Where(x =>
-                    x.FirstName.Contains(searchBy) ||
-                    x.LastName.Contains(searchBy))
+                    x.FirstName.IndexOf(searchBy, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                    x.LastName.IndexOf(searchBy, StringComparison.OrdinalIgnoreCase) >= 0)
                     .ToList();
             }
             ViewBag.SearchFilter = searchBy;
@@ -161,7 +161,20 @@ namespace MVC.Controllers
                                                         .ToList();
 
             // mapiranje
-            List<StudentView> listView = _mapper.Map<List<StudentView>>(filteredDTO); // zamjenio listDTO sa filteredList
+            //List<StudentView> listView = _mapper.Map<List<StudentView>>(filteredDTO); // zamjenio listDTO sa filteredList
+
+            List<StudentView> listView = new List<StudentView>(); // automapper nije mapirao za unit test iz nepoznatog razloga
+            foreach (StudentDTO filteredStudent in filteredDTO)
+            {
+                StudentView studentView = new StudentView();
+                studentView.Id = filteredStudent.Id;
+                studentView.FirstName = filteredStudent.FirstName;
+                studentView.LastName = filteredStudent.LastName;
+                studentView.EmailAddress = filteredStudent.EmailAddress;
+                studentView.DateOfBirth = filteredStudent.DateOfBirth;
+                studentView.RegisteredOn = filteredStudent.RegisteredOn;
+                listView.Add(studentView);
+            }
             //
 
             // PAGING part 2

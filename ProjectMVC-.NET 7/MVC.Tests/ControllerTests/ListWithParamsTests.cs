@@ -20,11 +20,15 @@ namespace MVC.Tests.ControllerTests
         private readonly StudentController _controller;
         private readonly IService _service;
         private readonly IMapper _mapper;
-        public ListWithParamsTests()
+
+        private readonly ITestOutputHelper _output;
+
+        public ListWithParamsTests(ITestOutputHelper output)
         {
             _service = A.Fake<IService>(); //FakeItEasy
             _mapper = A.Fake<IMapper>();
             _controller = new StudentController(_service, _mapper); // SUT, system under test
+            _output = output;
         }
         //--------------- FAKE LIST ----------------
         private List<StudentDTO> GetFakeStudents()
@@ -88,12 +92,15 @@ namespace MVC.Tests.ControllerTests
                                                                     regMax: null,
                                                                     page: null);
 
-
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
             StaticPagedList<StudentView> sortedList = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
-            //Assert.NotEmpty(sortedList);
-            //Assert.NotEmpty(fakeStudents);
+            
+            foreach (StudentView student in sortedList)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, LastName: {student.LastName}");
+            }
+            
             Assert.Equal(sortedList.Count, fakeStudents.Count);
 
             List<StudentDTO> meSorting = fakeStudents.OrderBy(s => s.DateOfBirth).ToList();
@@ -118,11 +125,179 @@ namespace MVC.Tests.ControllerTests
                                                                     regMin: null,
                                                                     regMax: null,
                                                                     page: null);
+
+
             // Assert
             ViewResult viewResult = Assert.IsType<ViewResult>(result);
             StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
-            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.FirstName.Contains("re") || s.LastName.Contains("re")).ToList(); // dakle ovdje dok je bila provjera veliko malo slovo nije prolazilo, cim sam mako prolazi test
 
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, LastName: {student.LastName}");
+            }
+
+            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.FirstName.IndexOf("re", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                                                        s.LastName.IndexOf("re", StringComparison.OrdinalIgnoreCase) >= 0).ToList();
+            Assert.Equal(filteredStudents.Count, list.TotalItemCount);
+        }
+        [Fact]
+        public async Task BornAfter_ReturnsFilteredList()
+        {
+            DateTime dobMin = DateTime.Parse("1995-01-01");
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ListWithParams(A<string>.Ignored)).Returns(fakeStudents);
+
+            // Act
+            ActionResult result = await _controller.ListWithParams(sortBy: null,
+                                                                    searchBy: null,
+                                                                    dobMin,
+                                                                    dobMax: null,
+                                                                    regMin: null,
+                                                                    regMax: null,
+                                                                    page: null);
+
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
+
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, DOB: {student.DateOfBirth}");
+            }
+
+            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.DateOfBirth >= dobMin).ToList();
+            Assert.Equal(filteredStudents.Count, list.TotalItemCount);
+        }
+        [Fact]
+        public async Task BornBefore_ReturnsFilteredList()
+        {
+            DateTime dobMax = DateTime.Parse("1995-01-01");
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ListWithParams(A<string>.Ignored)).Returns(fakeStudents);
+
+            // Act
+            ActionResult result = await _controller.ListWithParams(sortBy: null,
+                                                                    searchBy: null,
+                                                                    dobMin: null,
+                                                                    dobMax,
+                                                                    regMin: null,
+                                                                    regMax: null,
+                                                                    page: null);
+
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
+
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, DOB: {student.DateOfBirth}");
+            }
+
+            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.DateOfBirth <= dobMax).ToList();
+            Assert.Equal(filteredStudents.Count, list.TotalItemCount);
+        }
+        //
+        [Fact]
+        public async Task RegisteredAfter_ReturnsFilteredList()
+        {
+            DateTime regMin = DateTime.Parse("2022-01-01");
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ListWithParams(A<string>.Ignored)).Returns(fakeStudents);
+
+            // Act
+            ActionResult result = await _controller.ListWithParams(sortBy: null,
+                                                                    searchBy: null,
+                                                                    dobMin: null,
+                                                                    dobMax: null,
+                                                                    regMin,
+                                                                    regMax: null,
+                                                                    page: null);
+
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
+
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, RegisteredOn: {student.RegisteredOn}");
+            }
+
+            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.RegisteredOn >= regMin).ToList();
+            Assert.Equal(filteredStudents.Count, list.TotalItemCount);
+        }
+        [Fact]
+        public async Task RegisteredBefore_ReturnsFilteredList()
+        {
+            DateTime regMax = DateTime.Parse("2022-01-01");
+
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ListWithParams(A<string>.Ignored)).Returns(fakeStudents);
+
+            // Act
+            ActionResult result = await _controller.ListWithParams(sortBy: null,
+                                                                    searchBy: null,
+                                                                    dobMin: null,
+                                                                    dobMax: null,
+                                                                    regMin: null,
+                                                                    regMax,
+                                                                    page: null);
+
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
+
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, DOB: {student.RegisteredOn}");
+            }
+
+            List<StudentDTO> filteredStudents = fakeStudents.Where(s => s.RegisteredOn <= regMax).ToList();
+            Assert.Equal(filteredStudents.Count, list.TotalItemCount);
+        }
+        [Fact]
+        public async Task SpecificPageSet_ReturnsFilteredList()
+        {
+            // Arrange
+            List<StudentDTO> fakeStudents = GetFakeStudents();
+            A.CallTo(() => _service.ListWithParams(A<string>.Ignored)).Returns(fakeStudents);
+
+            int pageNumber = 1;
+            int pageSize = 5; // kontroler ce uvijek returnat koliko je u kontroleru zadano, s obzirom da ih je fejkano 3, a u kontroleru pagesize 5, uvijek ce sva 3 vratiti
+                                // ako zadam ovdje manje od 3, test faila, jer ocekuje koliko mu zadam a kontroler returna svo troje jer ih moze sve kako je setano u kontroleru
+
+            // Act
+            ActionResult result = await _controller.ListWithParams(sortBy: null,
+                                                                    searchBy: null,
+                                                                    dobMin: null,
+                                                                    dobMax: null,
+                                                                    regMin: null,
+                                                                    regMax: null,
+                                                                    page: pageNumber);
+
+            // Assert
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
+            StaticPagedList<StudentView> list = Assert.IsAssignableFrom<StaticPagedList<StudentView>>(viewResult.Model);
+
+            foreach (StudentView student in list)
+            {
+                _output.WriteLine($"Passed from controller - FirstName: {student.FirstName}, LastName: {student.LastName}");
+            }
+
+            // Simulating your method's logic to get what should have been filtered
+            List<StudentDTO> filteredStudents = fakeStudents.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            // Ensuring the count matches
             Assert.Equal(filteredStudents.Count, list.TotalItemCount);
         }
     }
