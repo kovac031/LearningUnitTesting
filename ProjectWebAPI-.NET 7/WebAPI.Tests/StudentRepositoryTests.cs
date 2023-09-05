@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Model;
 using Model.Common;
 using Repository;
+using Repository.Common;
 using Service.Common;
 using System;
 using System.Collections.Generic;
@@ -16,13 +17,13 @@ using Xunit.Abstractions;
 
 namespace WebAPI.Tests
 {
-    public static class Extensions
-    {
-        public static IEnumerable<T> Yield<T>(this T item)
-        {
-            yield return item;
-        }
-    }
+    //public static class Extensions
+    //{
+    //    public static IEnumerable<T> Yield<T>(this T item)
+    //    {
+    //        yield return item;
+    //    }
+    //}
     public class StudentRepositoryTests
     {
         private readonly StudentRepository _repository;
@@ -111,54 +112,22 @@ namespace WebAPI.Tests
             Assert.NotNull(list);
             Assert.Equal(fakeDbSet.Count(), list.Count);
         }
-        //[Fact]
-        //public async Task GetOneById_ReturnOneStudent()
-        //{
-        //    // Arrange
-        //    Guid id = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
-        //    Student fakeStudent = GetFakeStudents().FirstOrDefault(s => s.Id == id);
-
-        //    IQueryable<Student> student = new List<Student> { fakeStudent }.AsQueryable();
-        //    DbSet<Student> studentDbSet = CreateFakeDbSet(student);
-        //    A.CallTo(() => _context.Students).Returns(studentDbSet);
-
-
-        //    // Act
-        //    StudentDTO returnedStudent = await _repository.GetOneByIdAsync(id);
-        //    _output.WriteLine($"Passed from repository - FirstName: {returnedStudent.FirstName}");
-
-        //    // Assert
-        //    Assert.NotNull(returnedStudent);
-        //    Assert.Equal(fakeStudent.Id, returnedStudent.Id);
-        //    //Assert.Equal(fakeStudent.FirstName, fakeStudentDTO.FirstName);
-        //    //Assert.Equal(fakeStudent.LastName, fakeStudentDTO.LastName);
-        //    //Assert.Equal(fakeStudent.DateOfBirth, fakeStudentDTO.DateOfBirth);
-        //    //Assert.Equal(fakeStudent.EmailAddress, fakeStudentDTO.EmailAddress);
-        //    //Assert.Equal(fakeStudent.RegisteredOn, fakeStudentDTO.RegisteredOn);
-        //}
         [Fact]
         public async Task GetOneById_ReturnOneStudent()
         {
             // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
             Guid id = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
-            Student fakeStudent = GetFakeStudents().FirstOrDefault(s => s.Id == id);
-
-            IQueryable<Student> student = new List<Student> { fakeStudent }.AsQueryable();
-            DbSet<Student> studentDbSet = CreateFakeDbSet(student);
-
-            A.CallTo(() => _context.Students).Returns(studentDbSet);
-
-            // Manually mock FirstOrDefaultAsync
-            Expression<Func<Student, bool>> predicate = s => s.Id == id;
-            A.CallTo(() => _context.Students.FirstOrDefaultAsync(predicate, A<CancellationToken>.Ignored))
-                .Returns(Task.FromResult(fakeStudent));
-
+            Student fakeStudent = fakeDbSet.FirstOrDefault(student => student.Id == id);
 
             // Act
             StudentDTO returnedStudent = await _repository.GetOneByIdAsync(id);
             _output.WriteLine($"Passed from repository - FirstName: {returnedStudent.FirstName}");
 
             // Assert
+            Assert.NotNull(fakeStudent);
             Assert.NotNull(returnedStudent);
             Assert.Equal(fakeStudent.Id, returnedStudent.Id);
         }

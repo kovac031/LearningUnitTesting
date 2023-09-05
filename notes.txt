@@ -37,7 +37,12 @@ naming test metode ide:
 	- za repository ja malo drugacije jer sad baratam sa DbContext
 		- fejkam i DbSet
 		- pravim novu klasu AsyncHelper jer fejkanje DbSeta ne zna hendlat async
-		- zbog AutoMapper konflikta i potrebnih zaobilazenja da bi test radio, u repositoriju u .NET7 WebAPI gdje sam koristio AutoMapper u biti ne testiram je li returna listu, nego da li dobro mapira, tako da dalje nema smisla, treba preci na drugi projekt gdje AutoMapper nece pravit probleme s asyncom
+		- automapper pravi probleme
+			- za get all morao u repositoriju rucno mapirat da magicno proradi
+		- async jako pravi probleme
+			- za getonebyId u repositoriju morao maknuti await Context.Students.FirstOrDefaultAsync i staviti sinkrono
+
+
 
 ************************************
 ------- ProjectMVC-.NET 7 -------

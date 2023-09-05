@@ -42,7 +42,8 @@ namespace Repository
         //--------------- GET ONE BY ID --------------
         public async Task<StudentDTO> GetOneByIdAsync(Guid id)
         {
-            Student student = await Context.Students.FirstOrDefaultAsync(s => s.Id == id);
+            //Student student = await Context.Students.FirstOrDefaultAsync(s => s.Id == id);
+            Student student = Context.Students.FirstOrDefault(s => s.Id == id);
 
             if (student == null) { return null; }
 
