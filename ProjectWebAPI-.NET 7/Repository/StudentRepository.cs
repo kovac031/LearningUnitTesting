@@ -25,7 +25,19 @@ namespace Repository
         {
             IQueryable<Student> student = Context.Students;
 
-            return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+            //return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+
+            List<StudentDTO> list = await student.Select(x => new StudentDTO() // automapper zeza unit test
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                DateOfBirth = x.DateOfBirth,
+                EmailAddress = x.EmailAddress,
+                RegisteredOn = x.RegisteredOn
+            }).ToListAsync();
+
+            return list;
         }
         //--------------- GET ONE BY ID --------------
         public async Task<StudentDTO> GetOneByIdAsync(Guid id)

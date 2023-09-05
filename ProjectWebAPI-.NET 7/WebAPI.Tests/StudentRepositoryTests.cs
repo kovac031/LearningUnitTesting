@@ -3,13 +3,16 @@ using Common;
 using FakeItEasy;
 using Microsoft.EntityFrameworkCore;
 using Model;
+using Model.Common;
 using Repository;
 using Service.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace WebAPI.Tests
 {
@@ -25,18 +28,19 @@ namespace WebAPI.Tests
         private readonly StudentRepository _repository;
         private readonly JustStudentsContext _context;
         private readonly IMapper _mapper;
-
-        public StudentRepositoryTests()
+        private readonly ITestOutputHelper _output;
+        public StudentRepositoryTests(ITestOutputHelper output)
         {
             _context = A.Fake<JustStudentsContext>();
 
-            var mappingConfig = new MapperConfiguration(mc =>
+            MapperConfiguration mappingConfig = new MapperConfiguration(mc =>
             {
-                mc.AddProfile(new MapperProfile()); 
+                mc.AddProfile(new MapperProfile());
             });
             _mapper = mappingConfig.CreateMapper();
 
             _repository = new StudentRepository(_context, _mapper); // SUT, system under test
+            _output = output;
         }
         //------------------------------- FAKE LIST -----------------------------
         private IQueryable<Student> GetFakeStudents() // ne moze List type jer DbContext trazi IQueryable
@@ -93,40 +97,70 @@ namespace WebAPI.Tests
         {
             // Arrange
             DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
-
             A.CallTo(() => _context.Students).Returns(fakeDbSet);
 
-            List<StudentDTO> projectedStudents = fakeDbSet.Select(s => _mapper.Map<StudentDTO>(s)).ToList();
-
             // Act
-            List<StudentDTO> result = projectedStudents; // ne moze _repository.GetAllAsync() jer ima neki konflikt sa AutoMapper-ovim .ProjectTo, trebalo bi mijenjati repository i service metodu
-                                                            // ne testira da li returna listu, jer za to mora pozivati _repository, vec samo da li dobro mapira ... thanks AutoMapper /s
+            List<StudentDTO> list = await _repository.GetAllAsync();
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - FirstName: {student.FirstName}");
+            }
+
             // Assert
-            Assert.NotNull(result);
-            Assert.Equal(fakeDbSet.Count(), result.Count);
+            Assert.NotNull(list);
+            Assert.Equal(fakeDbSet.Count(), list.Count);
         }
+        //[Fact]
+        //public async Task GetOneById_ReturnOneStudent()
+        //{
+        //    // Arrange
+        //    Guid id = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+        //    Student fakeStudent = GetFakeStudents().FirstOrDefault(s => s.Id == id);
+
+        //    IQueryable<Student> student = new List<Student> { fakeStudent }.AsQueryable();
+        //    DbSet<Student> studentDbSet = CreateFakeDbSet(student);
+        //    A.CallTo(() => _context.Students).Returns(studentDbSet);
+
+
+        //    // Act
+        //    StudentDTO returnedStudent = await _repository.GetOneByIdAsync(id);
+        //    _output.WriteLine($"Passed from repository - FirstName: {returnedStudent.FirstName}");
+
+        //    // Assert
+        //    Assert.NotNull(returnedStudent);
+        //    Assert.Equal(fakeStudent.Id, returnedStudent.Id);
+        //    //Assert.Equal(fakeStudent.FirstName, fakeStudentDTO.FirstName);
+        //    //Assert.Equal(fakeStudent.LastName, fakeStudentDTO.LastName);
+        //    //Assert.Equal(fakeStudent.DateOfBirth, fakeStudentDTO.DateOfBirth);
+        //    //Assert.Equal(fakeStudent.EmailAddress, fakeStudentDTO.EmailAddress);
+        //    //Assert.Equal(fakeStudent.RegisteredOn, fakeStudentDTO.RegisteredOn);
+        //}
         [Fact]
-        public void GetOneById_ReturnOneStudent()
+        public async Task GetOneById_ReturnOneStudent()
         {
             // Arrange
             Guid id = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
             Student fakeStudent = GetFakeStudents().FirstOrDefault(s => s.Id == id);
 
-            // Return our fake DbSet when accessing _context.Students
-            A.CallTo(() => _context.Students).Returns(CreateFakeDbSet<Student>(new List<Student> { fakeStudent }.AsQueryable()));
+            IQueryable<Student> student = new List<Student> { fakeStudent }.AsQueryable();
+            DbSet<Student> studentDbSet = CreateFakeDbSet(student);
+
+            A.CallTo(() => _context.Students).Returns(studentDbSet);
+
+            // Manually mock FirstOrDefaultAsync
+            Expression<Func<Student, bool>> predicate = s => s.Id == id;
+            A.CallTo(() => _context.Students.FirstOrDefaultAsync(predicate, A<CancellationToken>.Ignored))
+                .Returns(Task.FromResult(fakeStudent));
+
 
             // Act
-            StudentDTO fakeStudentDTO = _mapper.Map<StudentDTO>(fakeStudent);
+            StudentDTO returnedStudent = await _repository.GetOneByIdAsync(id);
+            _output.WriteLine($"Passed from repository - FirstName: {returnedStudent.FirstName}");
 
             // Assert
-            Assert.NotNull(fakeStudentDTO);
-            Assert.Equal(fakeStudent.Id, fakeStudentDTO.Id);
-            Assert.Equal(fakeStudent.FirstName, fakeStudentDTO.FirstName);
-            Assert.Equal(fakeStudent.LastName, fakeStudentDTO.LastName);
-            Assert.Equal(fakeStudent.DateOfBirth, fakeStudentDTO.DateOfBirth);
-            Assert.Equal(fakeStudent.EmailAddress, fakeStudentDTO.EmailAddress);
-            Assert.Equal(fakeStudent.RegisteredOn, fakeStudentDTO.RegisteredOn);
+            Assert.NotNull(returnedStudent);
+            Assert.Equal(fakeStudent.Id, returnedStudent.Id);
         }
-
     }
 }
