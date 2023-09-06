@@ -87,6 +87,10 @@ naming test metode ide:
 
 - umjesto _output jednostavno Console.WriteLine() za debug poruke :D
 
+- u ControllerTests > CreateAsyncTests > OnSuccess_ReturnMessage_Created() fora sa navodnicima, faila test jer ne cita navodnike a kao treba, rjesio sa "\"Created!\""
+
+
+
 
 
 
