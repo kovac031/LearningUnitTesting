@@ -501,6 +501,7 @@ namespace WebAPI.Tests
             Assert.Equal(fakeStudents.Count, list.Count);
         }
         // ----------------------------------------------------- SORTING
+        // kikso sam ali necu sada popravljati, mislim da nema smisla da odma sortiram listu jer ju onda sortiranu saljem u kontroler, naravno da ce fercerat
         [Fact]
         public async Task ParamsAsync_SortByFirstName_Desc()
         {
@@ -522,7 +523,7 @@ namespace WebAPI.Tests
         public async Task ParamsAsync_SortByFirstName_Asc()
         {
             // Arrange
-            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.FirstName).ToList();
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderBy(s => s.FirstName).ToList();
             A.CallTo(() => _service.ParamsAsync("name_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
 
             // Act
@@ -557,7 +558,7 @@ namespace WebAPI.Tests
         public async Task ParamsAsync_SortByLastName_Asc()
         {
             // Arrange
-            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.LastName).ToList();
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderBy(s => s.LastName).ToList();
             A.CallTo(() => _service.ParamsAsync("surname_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
 
             // Act
@@ -592,7 +593,7 @@ namespace WebAPI.Tests
         public async Task ParamsAsync_SortByDateOfBirth_Asc()
         {
             // Arrange
-            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.DateOfBirth).ToList();
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderBy(s => s.DateOfBirth).ToList();
             A.CallTo(() => _service.ParamsAsync("dob_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
 
             // Act
@@ -626,7 +627,7 @@ namespace WebAPI.Tests
         public async Task ParamsAsync_SortByRegisteredOn_Asc()
         {
             // Arrange
-            List<StudentDTO> fakeStudents = GetFakeStudents().OrderByDescending(s => s.RegisteredOn).ToList();
+            List<StudentDTO> fakeStudents = GetFakeStudents().OrderBy(s => s.RegisteredOn).ToList();
             A.CallTo(() => _service.ParamsAsync("signup_asc", null, null, null, null, null, null, null, null)).Returns(fakeStudents);
 
             // Act

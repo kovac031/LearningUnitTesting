@@ -84,11 +84,13 @@ namespace WebAPI.Tests
 
             DbSet<T> fakeDbSet = A.Fake<DbSet<T>>(d => d.Implements(typeof(IQueryable<T>))
                                                       .Implements(typeof(IAsyncEnumerable<T>)));
-            A.CallTo(() => ((IQueryable<T>)fakeDbSet).Provider)
-             .Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
+            A.CallTo(() => ((IQueryable<T>)fakeDbSet).Provider).Returns(new TestAsyncQueryProvider<T>(queryable.Provider));
             A.CallTo(() => ((IQueryable<T>)fakeDbSet).Expression).Returns(queryable.Expression);
             A.CallTo(() => ((IQueryable<T>)fakeDbSet).ElementType).Returns(queryable.ElementType);
             A.CallTo(() => ((IQueryable<T>)fakeDbSet).GetEnumerator()).Returns(data.GetEnumerator());
+            //
+            A.CallTo(() => ((IAsyncEnumerable<T>)fakeDbSet).GetAsyncEnumerator(A<CancellationToken>._)).Returns(new TestAsyncEnumerator<T>(data.GetEnumerator()));
+
 
             return fakeDbSet;
         }
@@ -194,7 +196,171 @@ namespace WebAPI.Tests
             Assert.Equal(studentDTO.RegisteredOn, existingStudent.RegisteredOn);
             
         }
+        [Fact]
+        public async Task DeleteStudent_OnSuccess_ReturnTrue()
+        {
+            // Arrange
+            Guid studentId = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
 
+            IQueryable<Student> fakeStudents = GetFakeStudents();
+            Student existingStudent = fakeStudents.FirstOrDefault(s => s.Id == studentId);
 
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(fakeStudents);
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            //
+            bool isRemovedCalled = false; // provjera jel stvarno delete da ne bude da samo vraca true, iako ne vidim kako bi moglo jedno bez drugog al ajd
+            A.CallTo(() => _context.Students.Remove(A<Student>.Ignored)).Invokes(() => isRemovedCalled = true);
+
+            //Act
+            bool result = await _repository.DeleteAsync(studentId);
+
+            //Assert
+            Assert.True(result);
+            Assert.True(isRemovedCalled, "Remove metoda nije pozvana, DbSet"); //poruka bude na fail
+        }
+        // ------------- LIST WITH PARAMETERS -------------
+        [Fact]
+        public async Task ParamsAsync_NoParams_ReturnsFullList()
+        {
+            // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            // Act
+            List<StudentDTO> list = await _repository.ParamsAsync(
+                null, 
+                null, null, 
+                null, null, 
+                null, null,
+                null, null);
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - FirstName: {student.FirstName}");
+            }
+
+            // Assert
+            Assert.NotNull(list);
+            Assert.Equal(fakeDbSet.Count(), list.Count);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByDobASC_ReturnsSortedList()
+        {
+            // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents()); // ovo sam tu dobro napravio ali pogrjesio u kontroleru, tamo sam odma sortirao i onda ne testira metodu dobro
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            // Act
+            List<StudentDTO> list = await _repository.ParamsAsync(
+                "dob_asc", // sortBy
+                null, null,
+                null, null,
+                null, null,
+                null, null);
+
+            List<Student> fakeStudents = fakeDbSet.OrderBy(s => s.DateOfBirth).ToList(); // moj rucni sort za check
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - DOB: {student.DateOfBirth}");
+            }
+            // Assert
+            Assert.NotNull(list);
+            Assert.Equal(fakeDbSet.Count(), list.Count);
+            Assert.Equal(fakeStudents[0].FirstName, list[0].FirstName);
+            Assert.Equal(fakeStudents[1].FirstName, list[1].FirstName);
+            Assert.Equal(fakeStudents[2].FirstName, list[2].FirstName);
+        }
+        [Fact]
+        public async Task ParamsAsync_FilterBy_ReturnsFilteredList()
+        {
+            // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+            
+            // Act
+            List<StudentDTO> list = await _repository.ParamsAsync(
+                null,
+                "re", null, // FirstName da ima re
+                null, null,
+                null, null,
+                null, null);
+
+            List<Student> filteredStudents = fakeDbSet.Where(s => s.FirstName.Contains("re", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - FirstName: {student.FirstName}");
+            }
+
+            // Assert
+            Assert.NotNull(list);
+            Assert.Equal(filteredStudents.Count(), list.Count);            
+        }
+        [Fact]
+        public async Task ParamsAsync_FilterByDateOfBirth_ReturnsBornAfter()
+        {
+            // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            DateTime filterDate = new DateTime(1995, 1, 1);
+
+            // Act
+            List<StudentDTO> list = await _repository.ParamsAsync(
+                null,
+                null, null, 
+                null, filterDate.ToString("yyyy-MM-dd"), // born after
+                null, null,
+                null, null);
+
+            List<Student> filteredStudents = fakeDbSet.Where(s => s.DateOfBirth >= filterDate).ToList();
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - DOB: {student.DateOfBirth}");
+            }
+
+            // Assert
+            Assert.NotNull(list);
+            Assert.Equal(filteredStudents.Count(), list.Count);
+        }
+        [Fact]
+        public async Task ParamsAsync_SortByDobASC_and_OnePerPage_ReturnsSecondPage() // trazim najstariju osobu ali sa pagingom
+        {
+            // Arrange
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents()); 
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            int page = 3;
+            int studentsPerPage = 1;
+
+            // Act
+            List<StudentDTO> list = await _repository.ParamsAsync(
+                "dob_asc", // sortBy
+                null, null,
+                null, null,
+                null, null,
+                page.ToString(), studentsPerPage.ToString());
+
+            List<Student> fakeStudents = fakeDbSet.Skip(2).Take(1).OrderBy(s => s.DateOfBirth).ToList(); // rucno namjestio trecu stranicu, jednog studenta i sort ASC po dob, dakle treba vratit najstarijeg od tri na listi koje imam
+
+            foreach (StudentDTO student in list)
+            {
+                _output.WriteLine($"Passed from repository - DOB: {student.DateOfBirth}");
+            }
+            foreach (Student fakeStudent in fakeStudents)
+            {
+                _output.WriteLine($"Manual params from DbSet - DOB: {fakeStudent.DateOfBirth}");
+            }
+            // Assert
+            Assert.NotNull(list);
+            Assert.Equal(fakeStudents.Count(), list.Count);
+            for (int i = 0; i < list.Count; i++)
+            {
+                Assert.Equal(fakeStudents[i].Id, list[i].Id);
+            }
+        }
     }
 }

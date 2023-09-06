@@ -39,8 +39,12 @@ naming test metode ide:
 		- pravim novu klasu AsyncHelper jer fejkanje DbSeta ne zna hendlat async
 		- automapper pravi probleme
 			- za get all morao u repositoriju rucno mapirat da magicno proradi
+			- isto za get all sa parametrimas
 		- async jako pravi probleme
 			- za getonebyId u repositoriju morao maknuti await Context.Students.FirstOrDefaultAsync i staviti sinkrono
+			- za params isto moram maknuti await i ToListAsync u ToList a npr za getall nisam morao
+		- kod filtriranja pravi probleme oko malog i velikog slova, iako SwaggerUI nije 
+			- za repository promijenio s.LastName.Contains(lastName) u s.LastName.ToLower().Contains(lastName.ToLower()))
 
 
 

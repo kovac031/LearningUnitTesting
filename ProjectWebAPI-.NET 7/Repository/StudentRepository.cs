@@ -130,8 +130,8 @@ namespace Repository
             bool isRegAfterValid = DateTime.TryParse(regAfter, out regAfterParsed);
             //
             IQueryable<Student> student = Context.Students
-                .Where(s => (firstName == null || s.FirstName.Contains(firstName))
-                        && (lastName == null || s.LastName.Contains(lastName))
+                .Where(s => (firstName == null || s.FirstName.ToLower().Contains(firstName.ToLower()))
+                        && (lastName == null || s.LastName.ToLower().Contains(lastName.ToLower()))
                         && (dobBefore == null || s.DateOfBirth <= dobBeforeParsed) // daj rezultate manje od zadanog value
                         && (dobAfter == null || s.DateOfBirth >= dobAfterParsed)
                         && (regBefore == null || s.RegisteredOn <= regBeforeParsed)
@@ -182,7 +182,19 @@ namespace Repository
             { student = student.Skip((1 - 1) * Int32.Parse(studentsPerPage)).Take(Int32.Parse(studentsPerPage)); } // 1 da prikaze prvu stranicu po default
             //--------------------------------------------------
 
-            return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+            //return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+
+            List<StudentDTO> list = student.Select(x => new StudentDTO() // automapper zeza unit test
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                DateOfBirth = x.DateOfBirth,
+                EmailAddress = x.EmailAddress,
+                RegisteredOn = x.RegisteredOn
+            }).ToList();
+
+            return list;
         }
     }
 }
