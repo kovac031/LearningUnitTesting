@@ -71,6 +71,22 @@ naming test metode ide:
 
 - nema AutoMapper, ali i nije .NET 7 :/
 
+- add new Unit Test Project (.NET Framework)
+	- add new Basic Unit Test
+
+- instaliram Moq umjesto FakeItEasy u Tests projekt za fejkanje
+
+- napravio HelperClass i stavio GetFakeStudents tamo da ne moram kopirati u svaki test
+
+- treba [TestInitialize]     na pocetku, slicno kao DI s xUnitom
+        public void Setup()
+        {
+
+- nesto se bunio, bacao errore, resolvo sam sa desni klik i use local version 5.2.9 
+	- u nuget paketima vidim da je Microsoft.AspNet.WebApi 5.2.9, ali to je bilo i prije (provjerio na kopiji projekta bez testova) tako da neznam sta je promjenio
+
+- umjesto _output jednostavno Console.WriteLine() za debug poruke :D
+
 
 
 
