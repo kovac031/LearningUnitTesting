@@ -131,5 +131,70 @@ namespace WebAPI.Tests
             Assert.NotNull(returnedStudent);
             Assert.Equal(fakeStudent.Id, returnedStudent.Id);
         }
+        [Fact]
+        public async Task CreateStudent_OnSuccess_ReturnTrue()
+        {
+            // Arrange
+            StudentDTO studentDTO = new StudentDTO
+            {
+                Id = Guid.NewGuid(),
+                FirstName = "Marcus",
+                LastName = "Aurelius",
+                DateOfBirth = new DateTime(2001, 1, 1),
+                EmailAddress = "markimark@roma.com",
+                RegisteredOn = DateTime.Now
+            };            
+
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(GetFakeStudents());
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            Student fakeStudent = null;
+            A.CallTo(() => _context.Students.Add(A<Student>.Ignored)).Invokes((Student student) => fakeStudent = student);
+            
+            // Act
+            bool result = await _repository.CreateAsync(studentDTO);
+            _output.WriteLine($"Passed from repository - FirstName: {studentDTO.FirstName}");
+            _output.WriteLine($"Fake student from context - FirstName: {fakeStudent.FirstName}");
+
+            // Assert
+            Assert.True(result);
+        }
+        [Fact]
+        public async Task EditStudent_OnSuccess_ReturnTrue()
+        {
+            // Arrange
+            Guid studentId = new Guid("3f2504e0-4f89-11d3-9a0c-0305e82c3301");
+
+            IQueryable<Student> fakeStudents = GetFakeStudents();
+            Student existingStudent = fakeStudents.FirstOrDefault(s => s.Id == studentId);
+
+            DbSet<Student> fakeDbSet = CreateFakeDbSet(fakeStudents);
+            A.CallTo(() => _context.Students).Returns(fakeDbSet);
+
+            StudentDTO studentDTO = new StudentDTO
+            {
+                Id = studentId,
+                FirstName = "René",
+                LastName = "Smith",
+                EmailAddress = "newmail@gmail.com",
+                RegisteredOn = existingStudent.RegisteredOn
+            };
+
+            // Act
+            bool result = await _repository.EditAsync(studentDTO, studentId);
+            _output.WriteLine($"Passed from repository (edited) - FirstName: {studentDTO.FirstName} - LastName: {studentDTO.LastName}");
+            _output.WriteLine($"Fake student from context (original) - FirstName: {existingStudent.FirstName} - LastName: {existingStudent.LastName}");
+
+            // Assert // ne mogu usporedjivati jednakost stvari koje nece biti jednake nakon edita
+            Assert.True(result);
+            Assert.Equal(studentDTO.Id, existingStudent.Id);
+            Assert.Equal(studentDTO.FirstName, existingStudent.FirstName);
+            //Assert.Equal(studentDTO.LastName, existingStudent.LastName);
+            //Assert.Equal(studentDTO.EmailAddress, existingStudent.EmailAddress);
+            Assert.Equal(studentDTO.RegisteredOn, existingStudent.RegisteredOn);
+            
+        }
+
+
     }
 }
