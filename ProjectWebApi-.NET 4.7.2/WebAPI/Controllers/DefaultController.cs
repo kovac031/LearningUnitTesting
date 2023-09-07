@@ -81,7 +81,7 @@ namespace Project.WebAPI.Controllers
 
                 if (result)
                 {
-                    return Request.CreateResponse(HttpStatusCode.Created, "Edited!");
+                    return Request.CreateResponse(HttpStatusCode.OK, "Edited!");
                 }
                 else
                 {
