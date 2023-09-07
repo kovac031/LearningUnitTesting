@@ -98,11 +98,11 @@ naming test metode ide:
 
 - dodao CreateMockDbSet u helper classu od ranije radi preglednosti i DRY (dont repeat yourself)
 	- kopirao fake studente ali Student tip a ne StudentDTO, za fejkanje DB liste
-	- async klasika pravi probleme, u testu moze ostati ali u repositoriju ne
+	- async klasika pravi probleme negdje, u testu moze ostati ali u repositoriju ne
 
+- zanimljivo kako za edit taj async ne pravi problem
 
-
-
+- delete i params preostaju pa na mvc
 
 
 
