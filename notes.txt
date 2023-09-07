@@ -89,7 +89,10 @@ naming test metode ide:
 
 - u ControllerTests > CreateAsyncTests > OnSuccess_ReturnMessage_Created() fora sa navodnicima, faila test jer ne cita navodnike a kao treba, rjesio sa "\"Created!\""
 
-
+- shvatio da, ako u kontroleru nema nikakva sorting, paging, filtering logika, slati fakeList kroz kontroler nece suziti listu, i ako budem u testu rucno sortirao i sta ti ja znam, nikad nece biti match, pa tako ni pass
+	- nego onda sta jedino mogu je fakeListu u startu fejk suziti po parametrima, i to onda slati u kontroler, ali onda nece imat smisla ponovo rucno npr sortirati i sl, kad bi to znacilo da usporedjujem dvije liste koje sam obje ja rucno podesio
+		- a to sam radio sad vidim u webapi .net7 testovima u kontroleru
+			- eto nesto sam naucio xD
 
 
 

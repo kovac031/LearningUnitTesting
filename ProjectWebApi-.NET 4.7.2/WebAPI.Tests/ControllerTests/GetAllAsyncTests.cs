@@ -50,7 +50,7 @@ namespace WebAPI.Tests.ControllerTests
                 Console.WriteLine($"{i+1}. {students[i].FirstName} {students[i].LastName}");
             }
             Console.WriteLine("Moq-faked list:");
-            for (int i = 0; i < students.Count; i++)
+            for (int i = 0; i < fakeList.Count; i++)
             {
                 Console.WriteLine($"{i+1}. {fakeList[i].FirstName} {fakeList[i].LastName}");
             }

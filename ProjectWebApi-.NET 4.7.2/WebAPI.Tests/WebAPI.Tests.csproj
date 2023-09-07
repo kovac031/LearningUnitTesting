@@ -73,9 +73,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControllerTests\CreateAsyncTests.cs" />
+    <Compile Include="ControllerTests\DeleteAsyncTests.cs" />
     <Compile Include="ControllerTests\EditAsyncTests.cs" />
     <Compile Include="ControllerTests\GetAllAsyncTests.cs" />
     <Compile Include="ControllerTests\GetOneByIdAsyncTests.cs" />
+    <Compile Include="ControllerTests\ParamsAsyncTests.cs" />
     <Compile Include="HelperClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
