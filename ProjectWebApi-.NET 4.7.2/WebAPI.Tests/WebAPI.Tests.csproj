@@ -80,6 +80,7 @@
     <Compile Include="ControllerTests\ParamsAsyncTests.cs" />
     <Compile Include="HelperClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceTests\StudentServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -87,16 +88,23 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="RepositoryTests\" />
-    <Folder Include="ServiceTests\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{26D9D177-4E13-4BD7-B335-5633204770E5}</Project>
       <Name>Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Repository.Common\Repository.Common.csproj">
+      <Project>{43B15577-A975-407C-8C0F-19E459A753ED}</Project>
+      <Name>Repository.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Service.Common\Service.Common.csproj">
       <Project>{9A59B488-8460-4495-A71A-A66EFF008A23}</Project>
       <Name>Service.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Service\Service.csproj">
+      <Project>{6F5C0C0C-6D09-4A0C-B742-3EA7FDD90B64}</Project>
+      <Name>Service</Name>
     </ProjectReference>
     <ProjectReference Include="..\WebAPI\WebAPI.csproj">
       <Project>{A0B171FA-F7E8-4B4E-8A4E-6DC1B1C0C43F}</Project>
