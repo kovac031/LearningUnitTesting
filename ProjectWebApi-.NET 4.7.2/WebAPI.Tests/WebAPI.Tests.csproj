@@ -39,9 +39,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=9.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.9.0.0\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="Castle.Core, Version=5.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.5.1.1\lib\net462\Castle.Core.dll</HintPath>
     </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.TestPlatform.TestFramework, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\MSTest.TestFramework.2.2.10\lib\net45\Microsoft.VisualStudio.TestPlatform.TestFramework.dll</HintPath>
     </Reference>
@@ -57,6 +62,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.9.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Client.5.2.9\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -80,16 +86,23 @@
     <Compile Include="ControllerTests\ParamsAsyncTests.cs" />
     <Compile Include="HelperClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepositoryTests\GetAllAsyncTests.cs" />
     <Compile Include="ServiceTests\StudentServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="RepositoryTests\" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{64384B72-E6FE-48A7-8210-1B96EE512A1E}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DataAccessLayer\DataAccessLayer.csproj">
+      <Project>{1A3A5944-6183-4B3C-92B6-48C427CF27A4}</Project>
+      <Name>DataAccessLayer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Model\Model.csproj">
       <Project>{26D9D177-4E13-4BD7-B335-5633204770E5}</Project>
       <Name>Model</Name>
@@ -97,6 +110,10 @@
     <ProjectReference Include="..\Repository.Common\Repository.Common.csproj">
       <Project>{43B15577-A975-407C-8C0F-19E459A753ED}</Project>
       <Name>Repository.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Repository\Repository.csproj">
+      <Project>{7AC0E3AF-AB0F-4C9B-95AA-97834260B2A5}</Project>
+      <Name>Repository</Name>
     </ProjectReference>
     <ProjectReference Include="..\Service.Common\Service.Common.csproj">
       <Project>{9A59B488-8460-4495-A71A-A66EFF008A23}</Project>

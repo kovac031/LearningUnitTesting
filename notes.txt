@@ -94,6 +94,12 @@ naming test metode ide:
 		- a to sam radio sad vidim u webapi .net7 testovima u kontroleru
 			- eto nesto sam naucio xD
 
+- repository layer, klasika, ima malo kompliciraniju inicijalizaciju, ali se rijesi - desni klik automapper install local version, i ovo sa kontekstima i dbsetom desni klik pa Using sta vec treba i rjeseno
+
+- dodao CreateMockDbSet u helper classu od ranije radi preglednosti i DRY (dont repeat yourself)
+	- kopirao fake studente ali Student tip a ne StudentDTO, za fejkanje DB liste
+	- async klasika pravi probleme, u testu moze ostati ali u repositoriju ne
+
 
 
 

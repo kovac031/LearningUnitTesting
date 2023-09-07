@@ -27,19 +27,19 @@ namespace Repository
         {
             IQueryable<Student> student = Context.Students;
 
-            //List<StudentDTO> list = await student.Select(x => new StudentDTO()
+            //List<StudentDTO> list = student.Select(x => new StudentDTO()
             //{
             //    Id = x.Id,
             //    FirstName = x.FirstName,
-            //    LastName = x.LastName,                
+            //    LastName = x.LastName,
             //    DateOfBirth = x.DateOfBirth,
             //    EmailAddress = x.EmailAddress,
             //    RegisteredOn = x.RegisteredOn
-            //}).ToListAsync<StudentDTO>();
+            //}).ToList<StudentDTO>();
 
             //return list;
 
-            return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+            return _mapper.ProjectTo<StudentDTO>(student).ToList();
         }
         //--------------- GET ONE BY ID --------------
         public async Task<StudentDTO> GetOneByIdAsync(Guid id)
