@@ -70,7 +70,7 @@ namespace WebAPI.Tests.ControllerTests
             // Act
             HttpResponseMessage result = await _controller.ParamsAsync("dob_asc", null, null, null, null, null, null, "2", "1"); // na zadnjoj stranici ce biti najstariji
 
-            List<StudentDTO> students = await result.Content.ReadAsAsync<List<StudentDTO>>(); // dohvaca listu koja je prosla kroz kontroler
+            List<StudentDTO> students = await result.Content.ReadAsAsync<List<StudentDTO>>(); // dohvaca listu koja je prosla kroz kontroler, ako mi treba za nesto, ovdje npr je suvisna linija koda
                        
             // Assert
             Assert.IsNotNull(result);
