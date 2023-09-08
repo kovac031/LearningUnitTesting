@@ -61,7 +61,7 @@ namespace WebAPI.Tests.ControllerTests
         }
 
         [TestMethod]
-        public async Task SomeParamsProvided_OnSuccess_ReturnModifiedList()
+        public async Task SomeParamsProvided_OnSuccess_ReturnModifiedList() // shvatio da nema smila ovo sto radim, jer u kontroleru nema sorting i sl logika pa se to ni ne moze testirati, ja cim izvorno reduciram listu, dalje je svejedno koje parametre saljem, dob_asc ili null ce isto vratiti
         {
             // Arrange
             List<StudentDTO> fakeList = HelperClass.GetFakeStudents().OrderBy(s => s.DateOfBirth).Skip(2).Take(1).ToList(); // modified lista koja je kao dosla iz repositorija gdje je logika za sortiranje i ostalo
@@ -71,7 +71,19 @@ namespace WebAPI.Tests.ControllerTests
             HttpResponseMessage result = await _controller.ParamsAsync("dob_asc", null, null, null, null, null, null, "2", "1"); // na zadnjoj stranici ce biti najstariji
 
             List<StudentDTO> students = await result.Content.ReadAsAsync<List<StudentDTO>>(); // dohvaca listu koja je prosla kroz kontroler, ako mi treba za nesto, ovdje npr je suvisna linija koda
-                       
+                        
+            Console.WriteLine("Students from fakeList:");
+            foreach (StudentDTO student in fakeList)
+            {
+                Console.WriteLine($"FirstName: {student.FirstName}, DateOfBirth: {student.DateOfBirth}");
+            }
+
+            Console.WriteLine("Students from students list:");
+            foreach (StudentDTO student in students)
+            {
+                Console.WriteLine($"FirstName: {student.FirstName}, DateOfBirth: {student.DateOfBirth}");
+            }
+
             // Assert
             Assert.IsNotNull(result);
             Assert.AreEqual(HttpStatusCode.OK, result.StatusCode);

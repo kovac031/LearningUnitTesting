@@ -93,6 +93,7 @@ naming test metode ide:
 	- nego onda sta jedino mogu je fakeListu u startu fejk suziti po parametrima, i to onda slati u kontroler, ali onda nece imat smisla ponovo rucno npr sortirati i sl, kad bi to znacilo da usporedjujem dvije liste koje sam obje ja rucno podesio
 		- a to sam radio sad vidim u webapi .net7 testovima u kontroleru
 			- eto nesto sam naucio xD
+		- kasnije skuzio da sam to i tu ponovio za params 
 
 - repository layer, klasika, ima malo kompliciraniju inicijalizaciju, ali se rijesi - desni klik automapper install local version, i ovo sa kontekstima i dbsetom desni klik pa Using sta vec treba i rjeseno
 
@@ -102,7 +103,6 @@ naming test metode ide:
 
 - zanimljivo kako za edit taj async ne pravi problem
 
-- delete i params preostaju pa na mvc
 
 
 

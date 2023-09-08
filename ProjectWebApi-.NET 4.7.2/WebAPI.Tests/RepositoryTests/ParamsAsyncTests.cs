@@ -8,6 +8,7 @@ using Repository;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Core;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -74,54 +75,85 @@ namespace WebAPI.Tests.RepositoryTests
             Assert.AreEqual(fakeList.Count, result.Count);
         }
 
+        [TestMethod]
+        public async Task SomeParams_ReturnsExpectedList()
+        {
+            // Arrange
+            List<Student> fakeList = HelperClass.GetFakeDBStudents();
+            Mock<DbSet<Student>> mockSet = HelperClass.CreateMockDbSet(fakeList);
 
-        //[TestMethod]
-        //public async Task ParamsAsync_FilterSortAndPage_ReturnsExpectedList()
-        //{
-        //    // Arrange
-        //    List<Student> fakeList = HelperClass.GetFakeDBStudents();
-        //    Mock<DbSet<Student>> mockSet = HelperClass.CreateMockDbSet(fakeList);
-        //    IQueryable<Student> fakeListQueryable = fakeList.AsQueryable();
+            Mock<EFContext> mockContext = new Mock<EFContext>();
+            mockContext.Setup(c => c.Students).Returns(mockSet.Object);
 
-        //    Mock<EFContext> mockContext = new Mock<EFContext>();
-        //    mockContext.Setup(c => c.Students).Returns(mockSet.Object);
+            StudentRepository repository = new StudentRepository(mockContext.Object, _mapper);
 
-        //    StudentRepository repository = new StudentRepository(mockContext.Object, _mapper);
+            string sortBy = "dob_asc";
+            string firstName = null;
+            string lastName = null;
+            string dobBefore = null;
+            string dobAfter = null;
+            string regBefore = null;
+            string regAfter = null;
+            string pageNumber = "3";
+            string studentsPerPage = "1";
 
-        //    string sortBy = "name_asc";
-        //    string firstName = "John";
-        //    string lastName = null;
-        //    string dobBefore = "2000-01-01";
-        //    string dobAfter = null;
-        //    string regBefore = null;
-        //    string regAfter = "1995-01-01";
-        //    string pageNumber = "2";
-        //    string studentsPerPage = "5";
+            List<StudentDTO> expectedList = HelperClass.GetFakeStudents().OrderBy(s => s.DateOfBirth).Skip(2).Take(1).ToList(); // skip 2 je treca jer je 0 prva
 
-        //    // Act
-        //    List<StudentDTO> result = await repository.ParamsAsync(
-        //        sortBy,
-        //        firstName, lastName,
-        //        dobBefore, dobAfter,
-        //        regBefore, regAfter,
-        //        pageNumber, studentsPerPage
-        //    );
+            // Act
+            List<StudentDTO> result = await repository.ParamsAsync(
+                sortBy,
+                firstName, lastName,
+                dobBefore, dobAfter,
+                regBefore, regAfter,
+                pageNumber, studentsPerPage
+            );
 
-        //    // This is where you can put your expected list, sorting and filtering manually or programmatically.
-        //    // For simplicity, assuming `expectedList` is the list of students we expect after applying all filters, sorting and pagination.
-        //    List<StudentDTO> expectedList = /*...*/;
+            // Assert
+            Assert.AreEqual(expectedList.Count, result.Count);
 
-        //    // Assert
-        //    Assert.AreEqual(expectedList.Count, result.Count);
+            for (int i = 0; i < expectedList.Count; i++)
+            {
+                Assert.AreEqual(expectedList[i].Id, result[i].Id);
+                Assert.AreEqual(expectedList[i].FirstName, result[i].FirstName);
+                Assert.AreEqual(expectedList[i].LastName, result[i].LastName);                
+            }
+        }
 
-        //    for (int i = 0; i < expectedList.Count; i++)
-        //    {
-        //        Assert.AreEqual(expectedList[i].Id, result[i].Id);
-        //        Assert.AreEqual(expectedList[i].FirstName, result[i].FirstName);
-        //        Assert.AreEqual(expectedList[i].LastName, result[i].LastName);
-        //        // ... continue for all fields
-        //    }
-        //}
+        [TestMethod]
+        [ExpectedException(typeof(EntityException))]
+        public async Task SomeParams_ThrowsException()
+        {
+            // Arrange
+            List<Student> fakeList = HelperClass.GetFakeDBStudents();
+            Mock<DbSet<Student>> mockSet = HelperClass.CreateMockDbSet(fakeList);
 
+            Mock<EFContext> mockContext = new Mock<EFContext>();
+            mockContext.Setup(c => c.Students).Throws(new EntityException("Database Error"));
+
+            StudentRepository repository = new StudentRepository(mockContext.Object, _mapper);
+
+            string sortBy = "dob_asc";
+            string firstName = null;
+            string lastName = null;
+            string dobBefore = null;
+            string dobAfter = null;
+            string regBefore = null;
+            string regAfter = null;
+            string pageNumber = "3";
+            string studentsPerPage = "1";
+
+            List<StudentDTO> expectedList = HelperClass.GetFakeStudents().OrderBy(s => s.DateOfBirth).Skip(2).Take(1).ToList(); // skip 2 je treca jer je 0 prva
+
+            // Act
+            List<StudentDTO> result = await repository.ParamsAsync(
+                sortBy,
+                firstName, lastName,
+                dobBefore, dobAfter,
+                regBefore, regAfter,
+                pageNumber, studentsPerPage
+            );
+
+            // Assert
+        }
     }
 }
