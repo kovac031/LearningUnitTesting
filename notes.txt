@@ -112,6 +112,7 @@ naming test metode ide:
 
 - zanimljivo da za get all se nije async bunio
 
+- al ga je edit zakomplicirao
 
 
 

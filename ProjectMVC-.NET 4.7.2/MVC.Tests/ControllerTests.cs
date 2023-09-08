@@ -264,5 +264,118 @@ namespace MVC.Tests
         }
 
         // ------------ EDIT ----------------
+
+        [TestMethod]
+        public async Task EditAsync_HttpGet_ReturnsViewWithModel()
+        {
+            // Arrange
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+            _service.Setup(x => x.GetOneByIdAsync(id)).ReturnsAsync(fakeStudentDTO);
+
+            // Act
+            ActionResult result = await _controller.EditAsync(id);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            ViewResult viewResult = result as ViewResult;
+            Assert.IsInstanceOfType(viewResult.Model, typeof(StudentView));
+
+            StudentView foundStudentView = viewResult.Model as StudentView;
+            Console.WriteLine($"fakeStudentDTO: {fakeStudentDTO.FirstName} {fakeStudentDTO.LastName},\nfoundStudentView: {foundStudentView.FirstName} {foundStudentView.LastName}");
+        }
+
+        [TestMethod]
+        public async Task EditAsync_HttpPost_OnSuccess_ReturnsRedirect()
+        {
+            // Arrange
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+
+            Console.WriteLine($"student prije edita: {fakeStudentDTO.FirstName} {fakeStudentDTO.EmailAddress}");
+
+            StudentView fakeStudentView = new StudentView 
+            {
+                Id = id,
+                FirstName = fakeStudentDTO.FirstName,
+                LastName = fakeStudentDTO.LastName,
+                DateOfBirth = fakeStudentDTO.DateOfBirth,
+                EmailAddress = "newmail@email.com", // ovo je kao novo
+                RegisteredOn = fakeStudentDTO.RegisteredOn
+            };
+
+            StudentDTO editedStudentDTO = null; // studentView je samo ono sta ja unosim, bazi na edit se salje studentDTO model, tako da ce ovo biti taj nakon kontrolera
+
+            _service.Setup(x => x.EditAsync(It.IsAny<StudentDTO>(), It.IsAny<Guid>())).ReturnsAsync(true) // ovo je klasika set up
+                   .Callback<StudentDTO, Guid>((student, studentId) => { editedStudentDTO = student; }); // ovo je bitno, da nakon "call" kontrolera "back"-a DTO kojeg je obradio kontroler, ili sam tako bar shvatio, tako da se tu vidi promjena na DTO
+                                                                                                        // doslovno se mapirao sa studentDTO u kontroleru, a koji se opet mapirao automaperom sa studentView u kontroleru
+            // Act
+            ActionResult result = await _controller.EditAsync(fakeStudentView); // saljemo fakeStudentView, dakle ne EditedStudentDTO
+
+            Console.WriteLine($"student nakon edita: {editedStudentDTO.FirstName} {editedStudentDTO.EmailAddress}"); // tek se tu pojavljuje EditedStudentDTO, koji je od negdje pokupio updejtane podatke
+
+            // redirect to action nije view pa nema u sebi model za prikazati, imati na umu
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(RedirectToRouteResult));
+        }
+
+        [TestMethod]
+        public async Task EditAsync_HttpPost_OnFail_ReturnsFailedMessageView()
+        {
+            // Arrange
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+
+            Console.WriteLine($"student before edit: {fakeStudentDTO.FirstName} {fakeStudentDTO.EmailAddress}");
+
+            StudentView fakeStudentView = new StudentView
+            {
+                Id = id,
+                FirstName = fakeStudentDTO.FirstName,
+                LastName = fakeStudentDTO.LastName,
+                DateOfBirth = fakeStudentDTO.DateOfBirth,
+                EmailAddress = "newmail@email.com", // ovo je kao novo
+                RegisteredOn = fakeStudentDTO.RegisteredOn
+            };
+            _service.Setup(x => x.EditAsync(It.Is<StudentDTO>(s => s.Id == fakeStudentDTO.Id), id)).ReturnsAsync(false);
+
+            // Act
+            ActionResult result = await _controller.EditAsync(fakeStudentView);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            ViewResult viewResult = result as ViewResult;
+            Assert.AreEqual("Failed to edit", viewResult.ViewName);
+
+            Console.WriteLine($"student after edit: {fakeStudentDTO.FirstName} {fakeStudentDTO.EmailAddress}"); // mislim da ovo ipak nema smisla, mislim da ispisuje izvorni DTO a ne DTO koji je izasao iz kontrolera neizmjenjen zbog fejla
+        }
+
+        [TestMethod]
+        public async Task EditAsync_HttpPost_OnException_ReturnsExceptionMessageView()
+        {
+            // Arrange
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+
+            StudentView fakeStudentView = new StudentView
+            {
+                Id = id,
+                FirstName = fakeStudentDTO.FirstName,
+                LastName = fakeStudentDTO.LastName,
+                DateOfBirth = fakeStudentDTO.DateOfBirth,
+                EmailAddress = "newmail@email.com", // ovo je kao novo
+                RegisteredOn = fakeStudentDTO.RegisteredOn
+            };
+            _service.Setup(x => x.EditAsync(It.Is<StudentDTO>(s => s.Id == fakeStudentDTO.Id), id)).ThrowsAsync(new Exception());
+
+            // Act
+            ActionResult result = await _controller.EditAsync(fakeStudentView);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            ViewResult viewResult = result as ViewResult;
+            Assert.AreEqual("Exception", viewResult.ViewName);
+        }
     }
 }

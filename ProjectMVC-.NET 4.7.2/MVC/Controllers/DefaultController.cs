@@ -168,10 +168,10 @@ namespace Project.Controllers
             {
                 StudentDTO studentDTO = _mapper.Map<StudentDTO>(studentView);
 
-                bool created = await Service.EditAsync(studentDTO, studentDTO.Id);
-                if (!created)
+                bool edited = await Service.EditAsync(studentDTO, studentDTO.Id);
+                if (!edited)
                 {
-                    return View("Failed to edit");
+                    return View("Failed to edit", studentView);
                 }
                 return RedirectToAction("GetAllAsync");
             }
