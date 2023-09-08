@@ -69,8 +69,6 @@ naming test metode ide:
 *********************************************
 ------ PlayPalMini-WebAPI-.NET 4.7.2 -------- 
 
-- nema AutoMapper, ali i nije .NET 7 :/
-
 - add new Unit Test Project (.NET Framework)
 	- add new Basic Unit Test
 
@@ -104,7 +102,15 @@ naming test metode ide:
 - zanimljivo kako za edit taj async ne pravi problem
 
 
+*********************************************
+------ PlayPalMini-MVC-.NET 4.7.2 -------- 
 
+- samo cu kontroler testove
+
+- instaliram Moq u Mvc.Tests
+- trazit ce automapper, mvc i pagedlist instalaciju, pa desnim klikom install local version i rjeseno
+
+- zanimljivo da za get all se nije async bunio
 
 
 
