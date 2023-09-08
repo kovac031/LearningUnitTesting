@@ -142,5 +142,127 @@ namespace MVC.Tests
 
             // Assert
         }
+
+        // ------------ GET ONE BY ID ----------------
+
+        [TestMethod]
+        public async Task GetOneById_OnSuccess_ReturnStudent()
+        {
+            // Arrange
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+
+            _service.Setup(x => x.GetOneByIdAsync(id)).ReturnsAsync(fakeStudentDTO);
+
+            // Act
+            ActionResult result = await _controller.GetOneByIdAsync(id);
+
+            // Assert
+            Assert.IsNotNull(result); // Ensuring that we actually get a result
+            Assert.IsInstanceOfType(result, typeof(ViewResult)); // Ensuring that the result is a ViewResult
+            ViewResult viewResult = result as ViewResult; // Cast to ViewResult so we can inspect the Model
+
+            Assert.IsNotNull(viewResult.Model); // Ensuring that the model is not null
+            Assert.IsInstanceOfType(viewResult.Model, typeof(StudentView)); // Ensuring that the model is of type StudentView
+            StudentView foundStudentView = viewResult.Model as StudentView; // Cast to StudentView to check the data
+                        
+            Assert.AreEqual(fakeStudentDTO.Id, foundStudentView.Id);
+            Assert.AreEqual(fakeStudentDTO.FirstName, foundStudentView.FirstName);
+            Assert.AreEqual(fakeStudentDTO.DateOfBirth, foundStudentView.DateOfBirth);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityException))]
+        public async Task GetOneById_OnFail_ThrowException()
+        {
+            // Arrange            
+            Guid id = new Guid("6dcd4ce0-4f89-11d3-9a0c-0305e82c8811");
+            StudentDTO fakeStudentDTO = GetFakeStudents().FirstOrDefault(x => x.Id == id);
+
+            _service.Setup(x => x.GetOneByIdAsync(id)).ThrowsAsync(new EntityException("MY TEST EXCEPTION"));
+
+            // Act
+            ActionResult result = await _controller.GetOneByIdAsync(id);
+
+            // Assert
+        }
+
+        // ------------ CREATE NEW ----------------
+
+        [TestMethod]
+        public async Task CreateAsync_HttpGet_OnSuccess_ReturnsView()
+        {
+            // Act
+            ActionResult result = await _controller.CreateAsync();
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_HttpPost_OnSuccess_ReturnsRedirect()
+        {
+            // Arrange
+            StudentView fakeStudentView = new StudentView // kako u kontroleru ne provjeravam mapiranje, ovdje prolazi bilo kakvi parametri, nema veze sto je id null
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                DateOfBirth = new DateTime(1991, 1, 1),
+                EmailAddress = "johndoe@jemail.com"
+            };
+            _service.Setup(x => x.CreateAsync(It.IsAny<StudentDTO>())).ReturnsAsync(true);
+
+            // Act
+            ActionResult result = await _controller.CreateAsync(fakeStudentView);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(RedirectToRouteResult));
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_HttpPost_OnFail_ReturnsFailedMessageView()
+        {
+            // Arrange
+            StudentView fakeStudentView = new StudentView 
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                DateOfBirth = new DateTime(1991, 1, 1),
+                EmailAddress = "johndoe@jemail.com"
+            };
+            _service.Setup(x => x.CreateAsync(It.IsAny<StudentDTO>())).ReturnsAsync(false);
+
+            // Act
+            ActionResult result = await _controller.CreateAsync(fakeStudentView);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            ViewResult viewResult = result as ViewResult;
+            Assert.AreEqual("Failed to create", viewResult.ViewName);
+        }
+
+        [TestMethod]
+        public async Task CreateAsync_HttpPost_OnException_ReturnsExceptionMessageView()
+        {
+            // Arrange
+            StudentView fakeStudentView = new StudentView
+            {
+                FirstName = "John",
+                LastName = "Doe",
+                DateOfBirth = new DateTime(1991, 1, 1),
+                EmailAddress = "johndoe@jemail.com"
+            };
+            _service.Setup(x => x.CreateAsync(It.IsAny<StudentDTO>())).ThrowsAsync(new Exception());
+
+            // Act
+            ActionResult result = await _controller.CreateAsync(fakeStudentView);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(ViewResult));
+            ViewResult viewResult = result as ViewResult;
+            Assert.AreEqual("Exception", viewResult.ViewName);
+        }
+
+        // ------------ EDIT ----------------
     }
 }
