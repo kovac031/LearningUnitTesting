@@ -87,9 +87,11 @@
     <Compile Include="HelperClass.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RepositoryTests\CreateAsyncTests.cs" />
+    <Compile Include="RepositoryTests\DeleteAsyncTests.cs" />
     <Compile Include="RepositoryTests\EditAsyncTests.cs" />
     <Compile Include="RepositoryTests\GetAllAsyncTests.cs" />
     <Compile Include="RepositoryTests\GetOneByIdAsyncTests.cs" />
+    <Compile Include="RepositoryTests\ParamsAsyncTests.cs" />
     <Compile Include="ServiceTests\StudentServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

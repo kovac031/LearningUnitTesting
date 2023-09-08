@@ -183,7 +183,9 @@ namespace Repository
             { student = student.Skip((1 - 1) * Int32.Parse(studentsPerPage)).Take(Int32.Parse(studentsPerPage)); } // 1 da prikaze prvu stranicu po default
             //--------------------------------------------------
 
-            return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+            //return await _mapper.ProjectTo<StudentDTO>(student).ToListAsync();
+            return _mapper.ProjectTo<StudentDTO>(student).ToList(); // unit test hates async
+
         }
     }
 }
