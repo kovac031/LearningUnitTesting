@@ -377,5 +377,36 @@ namespace MVC.Tests
             ViewResult viewResult = result as ViewResult;
             Assert.AreEqual("Exception", viewResult.ViewName);
         }
+
+        // --------------- DELETE ------------------
+
+        [TestMethod]
+        public async Task DeleteAsync_OnSuccess_ReturnsRedirect()
+        {
+            // Arrange
+            Guid id = Guid.NewGuid();
+            _service.Setup(x => x.DeleteAsync(id)).Returns(Task.FromResult(true)); // gdje on vidi bool, ja neznam
+
+            // Act
+            ActionResult result = await _controller.DeleteAsync(id);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(RedirectToRouteResult));
+            RedirectToRouteResult redirectToActionResult = result as RedirectToRouteResult;
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(EntityException))]
+        public async Task DeleteAsync_OnFail_ThrowException()
+        {
+            // Arrange
+            Guid id = Guid.NewGuid();
+            _service.Setup(x => x.DeleteAsync(id)).ThrowsAsync(new EntityException());
+
+            // Act
+            ActionResult result = await _controller.DeleteAsync(id);
+
+            // Assert
+        }
     }
 }
